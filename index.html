@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1">
+<title>Uphone — ระบบผ่อนมือถือหน้าร้าน</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@400;500;600;700&family=IBM+Plex+Sans+Thai:wght@500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+<div class="app-shell">
+
+  <header class="app-header">
+    <div class="brand">
+      <div class="brand-mark">U</div>
+      <div class="brand-text">
+        <div class="brand-title">Uphone</div>
+        <div class="brand-sub">ระบบผ่อนมือถือหน้าร้าน</div>
+      </div>
+    </div>
+
+    <nav class="main-nav" id="mainNav">
+      <button class="nav-btn" data-view="dashboard">ติดตามค่างวด</button>
+      <button class="nav-btn" data-view="list">รายการสัญญา</button>
+      <button class="nav-btn" data-view="form">เพิ่มสัญญาใหม่</button>
+    </nav>
+
+    <div class="header-actions">
+      <div class="sync-badge" id="syncBadge" title="สถานะการซิงค์กับ Google Sheets">
+        <span class="dot"></span>
+        <span class="label">-</span>
+      </div>
+      <button class="icon-btn" id="btnRefreshSync" title="ซิงค์ข้อมูลตอนนี้">⟳</button>
+      <button class="icon-btn" id="btnSettings" title="ตั้งค่า">⚙️</button>
+      <div class="menu-wrap">
+        <button class="icon-btn" id="btnDataMenu" title="สำรองข้อมูล">⋮</button>
+        <div class="dropdown" id="dataDropdown">
+          <button id="btnExportJSON">Export JSON</button>
+          <button id="btnExportCSV">Export CSV</button>
+          <label class="dropdown-file">
+            Import JSON
+            <input type="file" id="importFileInput" accept="application/json">
+          </label>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <main class="app-main" id="appMain">
+    <!-- views render here -->
+  </main>
+
+</div>
+
+<!-- Settings Modal -->
+<div class="modal-overlay" id="settingsModal">
+  <div class="modal">
+    <div class="modal-header">
+      <h3>ตั้งค่าการคำนวณ</h3>
+      <button class="modal-close" data-close-modal>✕</button>
+    </div>
+    <div class="modal-body">
+      <label class="field">
+        <span>อัตราเงินดาวน์ (% ของราคาสินค้า)</span>
+        <input type="number" id="settingDownPayment" step="0.01" min="0" max="100">
+      </label>
+      <label class="field">
+        <span>อัตราดอกเบี้ยต่องวด (%)</span>
+        <input type="number" id="settingInterest" step="0.01" min="0" max="100">
+      </label>
+      <p class="modal-hint">ค่าเริ่มต้นตามสูตรจริงของร้าน: เงินดาวน์ 50%, ดอกเบี้ย 8% ต่องวด — ปรับได้ตามนโยบายร้าน</p>
+
+      <label class="field">
+        <span>Google Apps Script Web App URL</span>
+        <input type="text" id="settingWebAppUrl" placeholder="https://script.google.com/macros/s/xxxxx/exec">
+      </label>
+      <p class="modal-hint">
+        ใช้เชื่อมข้อมูลกับ Google Sheets เพื่อให้ทุกเครื่องเห็นข้อมูลชุดเดียวกัน
+        (ดูขั้นตอนสร้าง Web App URL ใน README.md ของโปรเจกต์)
+      </p>
+      <div class="settings-test-row">
+        <button type="button" class="btn btn-ghost btn-sm" id="btnTestConnection">ทดสอบการเชื่อมต่อ</button>
+        <span class="test-result" id="testConnectionResult"></span>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" data-close-modal>ยกเลิก</button>
+      <button class="btn btn-primary" id="btnSaveSettings">บันทึก</button>
+    </div>
+  </div>
+</div>
+
+<!-- Toast -->
+<div class="toast" id="toast"></div>
+
+<script src="js/config.js"></script>
+<script src="js/calc.js"></script>
+<script src="js/remote.js"></script>
+<script src="js/sync.js"></script>
+<script src="js/store.js"></script>
+<script src="js/seed.js"></script>
+<script src="js/view-list.js"></script>
+<script src="js/view-form.js"></script>
+<script src="js/view-dashboard.js"></script>
+<script src="js/app.js"></script>
+</body>
+</html>
