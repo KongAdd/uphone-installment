@@ -32,6 +32,21 @@ var HEADERS = [
 ];
 
 /**
+ * รีเซ็ตชีต "สัญญาผ่อน": ลบทิ้งทั้งแท็บ (ถ้ามี) แล้วสร้างใหม่พร้อมหัวตารางที่ถูกต้อง
+ * ใช้กรณีหัวตารางเพี้ยน/มีข้อมูลทดสอบค้างอยู่ — รันฟังก์ชันนี้ตรงๆ จาก Apps Script Editor
+ * (เลือก resetSheet ในดรอปดาวน์ข้างปุ่ม Run แล้วกด Run) ข้อมูลสัญญาเดิมในชีตนี้จะหายไปทั้งหมด
+ */
+function resetSheet() {
+  var ss = SpreadsheetApp.getActiveSpreadsheet();
+  var old = ss.getSheetByName(SHEET_NAME);
+  if (old) ss.deleteSheet(old);
+  var sheet = ss.insertSheet(SHEET_NAME);
+  sheet.appendRow(HEADERS);
+  sheet.setFrozenRows(1);
+  Logger.log('รีเซ็ตชีต "' + SHEET_NAME + '" เรียบร้อย หัวตาราง: ' + HEADERS.join(', '));
+}
+
+/**
  * คืนชีตเป้าหมาย สร้างใหม่พร้อมหัวตารางถ้ายังไม่มี
  */
 function getSheet_() {
