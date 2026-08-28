@@ -26,6 +26,7 @@ const App = (() => {
   function renderView() {
     if (currentView === 'list') ListView.render(mainEl);
     else if (currentView === 'form') FormView.render(mainEl, currentOpts);
+    else if (currentView === 'calculator') CalculatorView.render(mainEl);
     else DashboardView.render(mainEl);
   }
 
