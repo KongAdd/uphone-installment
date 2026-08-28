@@ -22,7 +22,7 @@ const CalculatorView = (() => {
             <input type="number" id="calc_price" min="0" step="0.01" placeholder="เช่น 15000">
           </label>
           <label class="field">
-            <span>จำนวนงวด (เดือน)</span>
+            <span id="calc_installmentsLabel">จำนวนงวด (เดือน)</span>
             <select id="calc_installments">
               ${[1, 2, 3, 4, 5, 6].map((n) => `<option value="${n}">${n} งวด</option>`).join('')}
             </select>
@@ -49,6 +49,20 @@ const CalculatorView = (() => {
     const $ = (sel) => container.querySelector(sel);
     const priceInput = $('#calc_price');
     const installmentsSelect = $('#calc_installments');
+    const installmentsLabel = $('#calc_installmentsLabel');
+
+    // จำกัดจำนวนงวดสูงสุดตามราคาขาย (ต่ำกว่า 8,400 บาท ผ่อนได้สูงสุด 3 งวด, ตั้งแต่ 8,400 บาทขึ้นไปผ่อนได้สูงสุด 6 งวด)
+    function updateInstallmentOptions() {
+      const totalPrice = Number(priceInput.value) || 0;
+      const max = maxInstallmentsForPrice(totalPrice);
+      const current = Number(installmentsSelect.value) || 1;
+
+      installmentsSelect.innerHTML = Array.from({ length: max }, (_, i) => i + 1)
+        .map((n) => `<option value="${n}">${n} งวด</option>`)
+        .join('');
+      installmentsSelect.value = Math.min(current, max);
+      installmentsLabel.textContent = `จำนวนงวด (เดือน) — ผ่อนได้สูงสุด ${max} งวด`;
+    }
 
     function recalc() {
       const s = getSettings();
@@ -65,8 +79,12 @@ const CalculatorView = (() => {
       $('#calc_perInstallment').textContent = formatMoney(perInstallment);
     }
 
-    priceInput.addEventListener('input', recalc);
+    priceInput.addEventListener('input', () => {
+      updateInstallmentOptions();
+      recalc();
+    });
     installmentsSelect.addEventListener('change', recalc);
+    updateInstallmentOptions();
     recalc();
   }
 

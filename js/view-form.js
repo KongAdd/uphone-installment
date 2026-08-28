@@ -66,9 +66,11 @@ const FormView = (() => {
               <div class="error-msg"></div>
             </label>
             <label class="field" data-field="installments">
-              <span>จำนวนงวด (เดือน) *</span>
+              <span id="f_installmentsLabel">จำนวนงวด (เดือน) *</span>
               <select id="f_installments">
-                ${[1, 2, 3, 4, 5, 6].map((n) => `<option value="${n}" ${existing?.installments === n ? 'selected' : ''}>${n} งวด</option>`).join('')}
+                ${Array.from({ length: Math.max(maxInstallmentsForPrice(existing?.totalPrice || 0), existing?.installments || 0) }, (_, i) => i + 1)
+                  .map((n) => `<option value="${n}" ${existing?.installments === n ? 'selected' : ''}>${n} งวด</option>`)
+                  .join('')}
               </select>
               <div class="error-msg"></div>
             </label>
@@ -120,6 +122,21 @@ const FormView = (() => {
       return getSettings();
     }
 
+    const installmentsLabel = $('#f_installmentsLabel');
+
+    // จำกัดจำนวนงวดสูงสุดตามราคาขาย (ต่ำกว่า 8,400 บาท ผ่อนได้สูงสุด 3 งวด, ตั้งแต่ 8,400 บาทขึ้นไปผ่อนได้สูงสุด 6 งวด)
+    function updateInstallmentOptions() {
+      const totalPrice = Number(totalPriceInput.value) || 0;
+      const max = maxInstallmentsForPrice(totalPrice);
+      const current = Number(installmentsSelect.value) || 1;
+
+      installmentsSelect.innerHTML = Array.from({ length: max }, (_, i) => i + 1)
+        .map((n) => `<option value="${n}">${n} งวด</option>`)
+        .join('');
+      installmentsSelect.value = Math.min(current, max);
+      installmentsLabel.textContent = `จำนวนงวด (เดือน) * — ผ่อนได้สูงสุด ${max} งวด`;
+    }
+
     function recalc() {
       const s = currentSettings();
       const totalPrice = Number(totalPriceInput.value) || 0;
@@ -163,9 +180,13 @@ const FormView = (() => {
       });
     }
 
-    totalPriceInput.addEventListener('input', recalc);
+    totalPriceInput.addEventListener('input', () => {
+      updateInstallmentOptions();
+      recalc();
+    });
     installmentsSelect.addEventListener('change', recalc);
     startDateInput.addEventListener('change', recalc);
+    installmentsLabel.textContent = `จำนวนงวด (เดือน) * — ผ่อนได้สูงสุด ${maxInstallmentsForPrice(existing?.totalPrice || 0)} งวด`;
     recalc();
 
     $('#btnCancelForm').addEventListener('click', () => App.navigate('list'));

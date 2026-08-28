@@ -77,6 +77,13 @@ function formatNumber(n) {
 
 const AMOUNT_TOLERANCE = 0.01;
 
+// จำนวนงวดสูงสุดที่อนุญาต ผูกกับราคาขาย: ต่ำกว่าเกณฑ์ผ่อนได้สูงสุด 3 งวด, ถึง/เกินเกณฑ์ผ่อนได้สูงสุด 6 งวด
+const INSTALLMENT_PRICE_THRESHOLD = 8400;
+
+function maxInstallmentsForPrice(price) {
+  return Number(price) >= INSTALLMENT_PRICE_THRESHOLD ? 6 : 3;
+}
+
 /* ---------- สูตรคำนวณหลัก (ต่อ 1 สัญญา) ---------- */
 
 // สถานะติดตาม (dashboard) เรียงลำดับความสำคัญ ใช้จัดอันดับตาราง
