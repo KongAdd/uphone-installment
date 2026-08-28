@@ -40,6 +40,7 @@ var HEADERS = [
   'ชื่อผู้อ้างอิง 2',
   'เบอร์โทรผู้อ้างอิง 2',
   'ความสัมพันธ์ผู้อ้างอิง 2',
+  'ลิงก์รูปบัตรประชาชน',
 ];
 
 /**
@@ -123,6 +124,12 @@ function doPost(e) {
     var body = JSON.parse(e.postData.contents);
     var action = body.action;
     var data = body.data || {};
+
+    if (action === 'uploadImage') {
+      var url = uploadImage_(data);
+      return jsonResponse_({ ok: true, action: 'uploadImage', url: url });
+    }
+
     var sheet = getSheet_();
 
     if (action === 'create') {
@@ -147,6 +154,31 @@ function doPost(e) {
   } catch (err) {
     return jsonResponse_({ ok: false, error: String(err) });
   }
+}
+
+var PHOTO_FOLDER_NAME = 'Uphone - รูปบัตรประชาชนลูกค้า';
+
+/** อัปโหลดรูป (base64) ขึ้น Google Drive แล้วคืน URL สำหรับแสดงผล (ตั้ง sharing เป็น anyone-with-link ให้ดูรูปได้) */
+function uploadImage_(data) {
+  if (!data.base64) throw new Error('ไม่พบข้อมูลรูปภาพ (base64 ว่าง)');
+  var mimeType = data.mimeType || 'image/jpeg';
+  var contractNo = data.contractNo || 'unknown';
+  var filename = 'idcard_' + contractNo + '_' + new Date().getTime() + '.jpg';
+
+  var bytes = Utilities.base64Decode(data.base64);
+  var blob = Utilities.newBlob(bytes, mimeType, filename);
+  var folder = getOrCreatePhotoFolder_();
+  var file = folder.createFile(blob);
+  file.setDescription('เลขที่สัญญา: ' + contractNo);
+  file.setSharing(DriveApp.Access.ANYONE_WITH_LINK, DriveApp.Permission.VIEW);
+  return 'https://drive.google.com/uc?export=view&id=' + file.getId();
+}
+
+/** หาโฟลเดอร์เก็บรูปบัตรประชาชน สร้างใหม่ถ้ายังไม่มี */
+function getOrCreatePhotoFolder_() {
+  var folders = DriveApp.getFoldersByName(PHOTO_FOLDER_NAME);
+  if (folders.hasNext()) return folders.next();
+  return DriveApp.createFolder(PHOTO_FOLDER_NAME);
 }
 
 /** แปลงแถว (array) -> object ตามหัวคอลัมน์ พร้อมแปลงวันที่เป็นข้อความ yyyy-MM-dd */

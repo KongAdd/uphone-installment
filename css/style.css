@@ -525,6 +525,26 @@ tr.track-incomplete:hover td, tr.track-done:hover td { filter: brightness(0.97);
   border-top: 1px dashed var(--border);
 }
 
+.photo-preview {
+  margin-top: 10px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.photo-preview img {
+  max-width: 220px;
+  max-height: 160px;
+  border-radius: 8px;
+  border: 1px solid var(--border);
+  object-fit: cover;
+}
+
+.photo-preview .photo-status {
+  font-size: 12.5px;
+  color: var(--text-mute);
+}
+
 .calc-summary {
   display: grid;
   grid-template-columns: repeat(3, 1fr);

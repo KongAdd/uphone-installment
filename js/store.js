@@ -38,6 +38,7 @@ const SHEET_FIELD_MAP = {
   ref2Name: 'ชื่อผู้อ้างอิง 2',
   ref2Phone: 'เบอร์โทรผู้อ้างอิง 2',
   ref2Relation: 'ความสัมพันธ์ผู้อ้างอิง 2',
+  idCardPhotoUrl: 'ลิงก์รูปบัตรประชาชน',
 };
 
 const PAYMENT_FIELD_NAMES = ['งวดที่ 1', 'งวดที่ 2', 'งวดที่ 3', 'งวดที่ 4', 'งวดที่ 5', 'งวดที่ 6'];
@@ -171,6 +172,7 @@ function addContract(contract, opts) {
     ref2Name: (contract.ref2Name || '').trim(),
     ref2Phone: (contract.ref2Phone || '').trim(),
     ref2Relation: (contract.ref2Relation || '').trim(),
+    idCardPhotoUrl: (contract.idCardPhotoUrl || '').trim(),
     createdAt: now,
     updatedAt: now,
   };
@@ -298,6 +300,7 @@ function exportContractsCSV() {
     'อาชีพ', 'เงินเดือน', 'ที่ทำงาน', 'ลิงก์แผนที่ที่ทำงาน', 'เบอร์นายจ้าง',
     'ชื่อผู้อ้างอิง 1', 'เบอร์โทรผู้อ้างอิง 1', 'ความสัมพันธ์ผู้อ้างอิง 1',
     'ชื่อผู้อ้างอิง 2', 'เบอร์โทรผู้อ้างอิง 2', 'ความสัมพันธ์ผู้อ้างอิง 2',
+    'ลิงก์รูปบัตรประชาชน',
   ];
   const rows = getContracts().map((c) => {
     const d = computeDerived(c, settings);
@@ -309,6 +312,7 @@ function exportContractsCSV() {
       c.occupation || '', c.salary === '' ? '' : c.salary, c.workplace || '', c.workplaceMapUrl || '', c.employerPhone || '',
       c.ref1Name || '', c.ref1Phone || '', c.ref1Relation || '',
       c.ref2Name || '', c.ref2Phone || '', c.ref2Relation || '',
+      c.idCardPhotoUrl || '',
     ];
   });
   const csv = [headers, ...rows].map((r) => r.map(csvEscape).join(',')).join('\r\n');
@@ -350,6 +354,7 @@ function importContractsJSON(fileText) {
       ref2Name: c.ref2Name || '',
       ref2Phone: c.ref2Phone || '',
       ref2Relation: c.ref2Relation || '',
+      idCardPhotoUrl: c.idCardPhotoUrl || '',
       createdAt: c.createdAt || now,
       updatedAt: now,
     };

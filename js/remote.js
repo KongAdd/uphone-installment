@@ -38,5 +38,13 @@ const RemoteAPI = (() => {
     return json;
   }
 
-  return { fetchAll, send };
+  // อัปโหลดรูป (base64 ไม่รวม prefix "data:image/...;base64,") ขึ้น Google Drive ผ่าน Apps Script
+  // คืน URL ของรูปที่อัปโหลดสำเร็จ ต้องออนไลน์เท่านั้น (ไม่มีคิวออฟไลน์สำหรับรูป)
+  async function uploadImage(base64, filename, mimeType, contractNo) {
+    const result = await send('uploadImage', { base64, filename, mimeType, contractNo });
+    if (!result || !result.url) throw new Error('ไม่ได้รับ URL รูปกลับมาจาก Google Apps Script');
+    return result.url;
+  }
+
+  return { fetchAll, send, uploadImage };
 })();

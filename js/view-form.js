@@ -3,6 +3,32 @@
    =========================================================== */
 
 const FormView = (() => {
+  // ย่อ/บีบอัดรูปฝั่ง client ก่อนอัปโหลด (จำกัดด้านยาวสุด + คุณภาพ JPEG) กัน payload ใหญ่เกินไป
+  function compressImageToDataUrl(file, maxDim, quality) {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload = () => {
+        const img = new Image();
+        img.onload = () => {
+          let { width, height } = img;
+          if (width > maxDim || height > maxDim) {
+            if (width > height) { height = Math.round((height * maxDim) / width); width = maxDim; }
+            else { width = Math.round((width * maxDim) / height); height = maxDim; }
+          }
+          const canvas = document.createElement('canvas');
+          canvas.width = width;
+          canvas.height = height;
+          canvas.getContext('2d').drawImage(img, 0, 0, width, height);
+          resolve(canvas.toDataURL('image/jpeg', quality));
+        };
+        img.onerror = () => reject(new Error('ไฟล์รูปเสียหายหรือไม่ใช่รูปภาพ'));
+        img.src = reader.result;
+      };
+      reader.onerror = () => reject(new Error('อ่านไฟล์ไม่สำเร็จ'));
+      reader.readAsDataURL(file);
+    });
+  }
+
   function render(container, opts) {
     opts = opts || {};
     const editId = opts.editId || null;
@@ -81,6 +107,13 @@ const FormView = (() => {
               <input type="date" id="f_startDate" value="${existing?.startDate || ''}">
               <div class="error-msg"></div>
             </label>
+          </div>
+
+          <div class="form-section-title">รูปบัตรประชาชนลูกค้า</div>
+          <div class="field" data-field="idCardPhoto">
+            <input type="file" id="f_idCardPhotoFile" accept="image/*">
+            <div id="idCardPhotoPreview"></div>
+            <div class="error-msg"></div>
           </div>
 
           <div class="form-section-title">ข้อมูลอาชีพและที่ทำงาน</div>
@@ -259,6 +292,29 @@ const FormView = (() => {
       imeiField.querySelector('.error-msg').textContent = '';
     });
 
+    let pendingPhotoFile = null;
+    const photoFileInput = $('#f_idCardPhotoFile');
+    const photoPreviewEl = $('#idCardPhotoPreview');
+
+    function renderPhotoPreview(dataUrl, statusText) {
+      photoPreviewEl.innerHTML = dataUrl
+        ? `<div class="photo-preview"><img src="${dataUrl}" alt="รูปบัตรประชาชน"><span class="photo-status">${statusText || ''}</span></div>`
+        : '';
+    }
+
+    if (existing?.idCardPhotoUrl) {
+      renderPhotoPreview(existing.idCardPhotoUrl, 'รูปปัจจุบัน — เลือกไฟล์ใหม่เพื่อเปลี่ยน');
+    }
+
+    photoFileInput.addEventListener('change', () => {
+      const file = photoFileInput.files[0];
+      if (!file) { pendingPhotoFile = null; return; }
+      pendingPhotoFile = file;
+      const reader = new FileReader();
+      reader.onload = () => renderPhotoPreview(reader.result, 'รูปที่เลือกไว้ (จะอัปโหลดตอนกดบันทึก)');
+      reader.readAsDataURL(file);
+    });
+
     $('#btnCancelForm').addEventListener('click', () => App.navigate('list'));
 
     $('#contractForm').addEventListener('submit', (e) => {
@@ -281,7 +337,7 @@ const FormView = (() => {
       el.querySelector('.error-msg').textContent = msg;
     }
 
-    function handleSubmit() {
+    async function handleSubmit() {
       clearErrors();
       let hasError = false;
 
@@ -318,6 +374,30 @@ const FormView = (() => {
         return;
       }
 
+      let idCardPhotoUrl = existing?.idCardPhotoUrl || '';
+      if (pendingPhotoFile) {
+        const submitBtn = container.querySelector('#contractForm button[type="submit"]');
+        if (!getWebAppUrl()) {
+          App.toast('ยังไม่ได้ตั้งค่า Google Sheets จึงอัปโหลดรูปไม่ได้ตอนนี้ (บันทึกข้อมูลอื่นได้ตามปกติ ค่อยอัปโหลดรูปทีหลัง)', true);
+        } else if (!navigator.onLine) {
+          App.toast('ออฟไลน์อยู่ อัปโหลดรูปไม่ได้ตอนนี้ (บันทึกข้อมูลอื่นได้ตามปกติ ค่อยอัปโหลดรูปทีหลัง)', true);
+        } else {
+          submitBtn.disabled = true;
+          const originalBtnText = submitBtn.textContent;
+          submitBtn.textContent = 'กำลังอัปโหลดรูป...';
+          try {
+            const dataUrl = await compressImageToDataUrl(pendingPhotoFile, 1400, 0.75);
+            const base64 = dataUrl.split(',')[1];
+            idCardPhotoUrl = await RemoteAPI.uploadImage(base64, pendingPhotoFile.name, 'image/jpeg', contractNo);
+          } catch (err) {
+            App.toast('อัปโหลดรูปไม่สำเร็จ: ' + err.message + ' (บันทึกข้อมูลอื่นได้ตามปกติ)', true);
+          } finally {
+            submitBtn.disabled = false;
+            submitBtn.textContent = originalBtnText;
+          }
+        }
+      }
+
       const payload = {
         contractNo,
         purchaseDate: $('#f_purchaseDate').value,
@@ -342,6 +422,7 @@ const FormView = (() => {
         ref2Name: $('#f_ref2Name').value.trim(),
         ref2Phone: $('#f_ref2Phone').value.trim(),
         ref2Relation: $('#f_ref2Relation').value.trim(),
+        idCardPhotoUrl,
       };
 
       if (isEdit) {
