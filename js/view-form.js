@@ -11,6 +11,7 @@ const FormView = (() => {
     const settings = getSettings();
 
     const payments = existing ? existing.payments.slice() : [null, null, null, null, null, null];
+    const suggestedContractNo = isEdit ? existing.contractNo : generateNextContractNo();
 
     container.innerHTML = `
       <div class="view-header">
@@ -24,8 +25,8 @@ const FormView = (() => {
         <form id="contractForm" novalidate>
           <div class="form-grid">
             <label class="field" data-field="contractNo">
-              <span>เลขที่สัญญา *</span>
-              <input type="text" id="f_contractNo" placeholder="เช่น UP 206" value="${escapeAttr(existing?.contractNo)}" ${isEdit ? 'disabled title="เลขที่สัญญาแก้ไขไม่ได้หลังสร้าง เพราะใช้อ้างอิงแถวใน Google Sheets"' : ''}>
+              <span>เลขที่สัญญา * ${isEdit ? '' : '(รันอัตโนมัติ แก้ไขได้ถ้าต้องการ)'}</span>
+              <input type="text" id="f_contractNo" placeholder="เช่น UP0206" value="${escapeAttr(suggestedContractNo)}" ${isEdit ? 'disabled title="เลขที่สัญญาแก้ไขไม่ได้หลังสร้าง เพราะใช้อ้างอิงแถวใน Google Sheets"' : ''}>
               <div class="error-msg"></div>
             </label>
             <label class="field" data-field="purchaseDate">

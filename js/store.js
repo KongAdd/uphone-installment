@@ -112,6 +112,24 @@ function findByContractNo(contractNo, excludeId) {
   ) || null;
 }
 
+const CONTRACT_NO_PREFIX = 'UP';
+const CONTRACT_NO_START = 201; // เลขที่สัญญาแรกเริ่มที่ UP0201 ถ้ายังไม่มีสัญญาใดตรงรูปแบบนี้เลย
+const CONTRACT_NO_PATTERN = /^up\s*0*(\d+)$/i;
+
+// รันเลขที่สัญญาถัดไปสดจากข้อมูลปัจจุบันเสมอ (ไม่ใช่ตัวนับที่จำค่าไว้)
+// เช่น ถ้าเคยมี UP0201, UP0202 แล้วลบ UP0202 ทิ้ง สร้างใหม่จะได้ UP0202 อีกครั้ง เพราะคำนวณจาก max ที่มีอยู่จริง + 1
+function generateNextContractNo() {
+  let max = CONTRACT_NO_START - 1;
+  _cache.forEach((c) => {
+    const m = CONTRACT_NO_PATTERN.exec((c.contractNo || '').trim());
+    if (m) {
+      const num = parseInt(m[1], 10);
+      if (num > max) max = num;
+    }
+  });
+  return CONTRACT_NO_PREFIX + String(max + 1).padStart(4, '0');
+}
+
 // opts.sync = false ใช้เฉพาะตอน seed ข้อมูลตัวอย่าง (ไม่ต้องดันขึ้น Google Sheets)
 function addContract(contract, opts) {
   const sync = !opts || opts.sync !== false;
