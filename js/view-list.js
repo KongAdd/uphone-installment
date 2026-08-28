@@ -263,6 +263,14 @@ const ListView = (() => {
             ${detailItem('เลขประจำเครื่อง (S/N)', c.serialNumber)}
           </div>
 
+          <div class="detail-section-title">ที่อยู่ปัจจุบัน</div>
+          <div class="detail-grid">
+            ${detailItem('ที่อยู่ปัจจุบัน', c.currentAddress)}
+            ${c.currentAddressMapUrl
+              ? detailItem('ลิงก์แผนที่ที่อยู่ปัจจุบัน', `<a href="${escapeHtml(c.currentAddressMapUrl)}" target="_blank" rel="noopener">เปิดแผนที่</a>`, { raw: true })
+              : detailItem('ลิงก์แผนที่ที่อยู่ปัจจุบัน', '-')}
+          </div>
+
           <div class="detail-section-title">ข้อมูลการเงิน</div>
           <div class="detail-grid">
             ${detailItem('ราคาสินค้ารวม', formatMoney(c.totalPrice))}

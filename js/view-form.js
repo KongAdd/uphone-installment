@@ -109,6 +109,18 @@ const FormView = (() => {
             </label>
           </div>
 
+          <div class="form-section-title">ที่อยู่ปัจจุบัน</div>
+          <div class="form-grid">
+            <label class="field span-2">
+              <span>ที่อยู่ปัจจุบัน</span>
+              <input type="text" id="f_currentAddress" value="${escapeAttr(existing?.currentAddress)}">
+            </label>
+            <label class="field">
+              <span>ลิงก์ Google Map ที่อยู่ปัจจุบัน</span>
+              <input type="url" id="f_currentAddressMapUrl" placeholder="https://maps.google.com/..." value="${escapeAttr(existing?.currentAddressMapUrl)}">
+            </label>
+          </div>
+
           <div class="form-section-title">รูปบัตรประชาชนลูกค้า</div>
           <div class="field" data-field="idCardPhoto">
             <input type="file" id="f_idCardPhotoFile" accept="image/*">
@@ -411,6 +423,8 @@ const FormView = (() => {
         startDate,
         payments: payments.map((p, i) => (i < installments ? p : null)),
         trackingNote: $('#f_trackingNote').value,
+        currentAddress: $('#f_currentAddress').value.trim(),
+        currentAddressMapUrl: $('#f_currentAddressMapUrl').value.trim(),
         occupation: $('#f_occupation').value.trim(),
         salary: $('#f_salary').value,
         workplace: $('#f_workplace').value.trim(),
