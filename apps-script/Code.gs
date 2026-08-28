@@ -59,6 +59,17 @@ function resetSheet() {
 }
 
 /**
+ * ทดสอบสิทธิ์เข้าถึง Google Drive — รันฟังก์ชันนี้ตรงๆ จาก Apps Script Editor
+ * (เลือก testDriveAccess ในดรอปดาวน์ข้างปุ่ม Run แล้วกด Run) เพื่อบังคับให้ขึ้นหน้าต่าง
+ * "Authorize access" สำหรับสิทธิ์ Drive ทันที เผื่อกด Deploy เฉยๆ แล้วไม่ขึ้นให้เอง
+ * รันสำเร็จจะเห็น log ชื่อโฟลเดอร์ที่สร้าง/พบ ใน View → Logs
+ */
+function testDriveAccess() {
+  var folder = getOrCreatePhotoFolder_();
+  Logger.log('เข้าถึง Google Drive ได้ปกติ โฟลเดอร์: "' + folder.getName() + '" (' + folder.getUrl() + ')');
+}
+
+/**
  * คืนชีตเป้าหมาย สร้างใหม่พร้อมหัวตารางถ้ายังไม่มี
  * ถ้าชีตมีอยู่แล้วแต่ขาดคอลัมน์ใหม่ (เช่นเพิ่มฟิลด์ทีหลัง) จะเติมหัวคอลัมน์ที่ขาดต่อท้ายให้อัตโนมัติ
  * โดยไม่แตะแถวข้อมูลเดิมเลย (ดู migrateHeaders_)
