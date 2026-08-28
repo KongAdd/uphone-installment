@@ -5,7 +5,7 @@
    =========================================================== */
 
 function seedPerInstallment(totalPrice, installments, settings) {
-  const downPayment = round2(totalPrice * settings.downPaymentRate);
+  const downPayment = computeDownPayment(totalPrice, settings.downPaymentRate);
   const principal = totalPrice - downPayment;
   const totalInstallmentAmount = round2(principal * (1 + settings.interestRatePerInstallment * installments));
   return round2(totalInstallmentAmount / installments);

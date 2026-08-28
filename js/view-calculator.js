@@ -69,7 +69,7 @@ const CalculatorView = (() => {
       const totalPrice = Number(priceInput.value) || 0;
       const installments = Number(installmentsSelect.value) || 1;
 
-      const downPayment = round2(totalPrice * s.downPaymentRate);
+      const downPayment = computeDownPayment(totalPrice, s.downPaymentRate);
       const principal = totalPrice - downPayment;
       const totalInstallmentAmount = round2(principal * (1 + s.interestRatePerInstallment * installments));
       const perInstallment = round2(totalInstallmentAmount / installments);

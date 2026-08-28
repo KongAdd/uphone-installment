@@ -84,6 +84,11 @@ function maxInstallmentsForPrice(price) {
   return Number(price) >= INSTALLMENT_PRICE_THRESHOLD ? 6 : 3;
 }
 
+// เงินดาวน์ปัดขึ้นเป็นจำนวนเต็มบาทเสมอ ไม่เอาเศษสตางค์
+function computeDownPayment(totalPrice, rate) {
+  return Math.ceil(Number(totalPrice) * rate);
+}
+
 /* ---------- สูตรคำนวณหลัก (ต่อ 1 สัญญา) ---------- */
 
 // สถานะติดตาม (dashboard) เรียงลำดับความสำคัญ ใช้จัดอันดับตาราง
@@ -105,7 +110,7 @@ function computeDerived(contract, settings) {
   const totalPrice = Number(contract.totalPrice) || 0;
   const installments = Number(contract.installments) || 0;
 
-  const downPayment = round2(totalPrice * rate);
+  const downPayment = computeDownPayment(totalPrice, rate);
   const principal = totalPrice - downPayment;
   const totalInstallmentAmount = round2(principal * (1 + interest * installments));
   const perInstallment = installments > 0 ? round2(totalInstallmentAmount / installments) : 0;
