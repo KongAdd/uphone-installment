@@ -41,7 +41,7 @@ const ListView = (() => {
       <div class="view-header">
         <div>
           <div class="view-title">รายการสัญญาผ่อนทั้งหมด</div>
-          <div class="view-desc">คลิกที่ช่องงวดเพื่อกรอก/แก้ไขจำนวนเงินที่รับได้ทันที</div>
+          <div class="view-desc">คลิกที่เลขที่สัญญาเพื่อดูรายละเอียด หรือคลิกที่ช่องงวดเพื่อกรอก/แก้ไขจำนวนเงินที่รับได้ทันที</div>
         </div>
         <button class="btn btn-accent" data-goto="form">+ เพิ่มสัญญาใหม่</button>
       </div>
@@ -118,7 +118,7 @@ const ListView = (() => {
 
           return `
             <tr>
-              <td class="cell-strong">${escapeHtml(c.contractNo)}</td>
+              <td class="cell-strong"><a href="#" class="contract-link" data-details="${c.id}">${escapeHtml(c.contractNo)}</a></td>
               <td>${escapeHtml(c.customerName)}</td>
               <td class="cell-mute">${escapeHtml(c.phone || '-')}</td>
               <td>${escapeHtml(c.model || '-')}</td>
@@ -146,6 +146,13 @@ const ListView = (() => {
       });
       tbody.querySelectorAll('[data-edit]').forEach((el) => {
         el.addEventListener('click', () => App.navigate('form', { editId: el.dataset.edit }));
+      });
+      tbody.querySelectorAll('[data-details]').forEach((el) => {
+        el.addEventListener('click', (e) => {
+          e.preventDefault();
+          const contract = getContractById(el.dataset.details);
+          if (contract) showDetailsModal(contract, computeDerived(contract, settings));
+        });
       });
       tbody.querySelectorAll('[data-del]').forEach((el) => {
         el.addEventListener('click', () => handleDelete(el.dataset.del));
@@ -192,6 +199,124 @@ const ListView = (() => {
     }
 
     renderRows();
+  }
+
+  function detailItem(label, value, opts) {
+    opts = opts || {};
+    if (value === '' || value === null || value === undefined) value = '-';
+    return `<div class="detail-item"><span class="detail-label">${label}</span><span class="detail-value">${opts.raw ? value : escapeHtml(value)}</span></div>`;
+  }
+
+  function showDetailsModal(c, d) {
+    const existingModal = document.querySelector('.details-modal-overlay');
+    if (existingModal) existingModal.remove();
+
+    const refItems = [1, 2]
+      .map((n) => {
+        const name = c[`ref${n}Name`];
+        const phone = c[`ref${n}Phone`];
+        const relation = c[`ref${n}Relation`];
+        if (!name && !phone && !relation) return '';
+        return `
+          <div class="detail-grid">
+            ${detailItem(`ชื่อผู้อ้างอิง ${n}`, name)}
+            ${detailItem(`เบอร์โทร`, phone)}
+            ${detailItem(`ความสัมพันธ์`, relation)}
+          </div>
+        `;
+      })
+      .join('');
+
+    const installmentRows = c.payments
+      .map((amt, i) => {
+        if (i >= c.installments) return '';
+        const st = d.slotStates[i];
+        const cls = slotClass(st.color);
+        const amtLabel = amt === null || amt === undefined || amt === '' ? '— ยังไม่จ่าย' : formatMoney(amt);
+        return `
+          <div class="installment-detail-row">
+            <span>งวดที่ ${i + 1}</span>
+            <span>${st.dueDate ? formatThaiDate(st.dueDate) : '-'}</span>
+            <span class="slot-cell ${cls}" style="cursor:default;">${amtLabel}</span>
+          </div>
+        `;
+      })
+      .join('');
+
+    const overlay = document.createElement('div');
+    overlay.className = 'modal-overlay details-modal-overlay open';
+    overlay.innerHTML = `
+      <div class="modal modal-large">
+        <div class="modal-header">
+          <h3>รายละเอียดสัญญา — ${escapeHtml(c.contractNo)}</h3>
+          <button class="modal-close" data-close-details>✕</button>
+        </div>
+        <div class="modal-body modal-body-scroll">
+
+          <div class="detail-section-title">ข้อมูลลูกค้าและเครื่อง</div>
+          <div class="detail-grid">
+            ${detailItem('ชื่อลูกค้า', c.customerName)}
+            ${detailItem('เบอร์โทร', c.phone)}
+            ${detailItem('วันที่ซื้อ', c.purchaseDate ? formatThaiDate(c.purchaseDate) : '-')}
+            ${detailItem('รุ่นเครื่อง', c.model)}
+            ${detailItem('IMEI', c.imei)}
+            ${detailItem('เลขประจำเครื่อง (S/N)', c.serialNumber)}
+          </div>
+
+          <div class="detail-section-title">ข้อมูลการเงิน</div>
+          <div class="detail-grid">
+            ${detailItem('ราคาสินค้ารวม', formatMoney(c.totalPrice))}
+            ${detailItem('เงินดาวน์', formatMoney(d.downPayment))}
+            ${detailItem('ยอดผ่อนทั้งหมด', formatMoney(d.totalInstallmentAmount))}
+            ${detailItem('ผ่อนต่องวด', formatMoney(d.perInstallment))}
+            ${detailItem('วันที่เริ่มชำระ', formatThaiDate(c.startDate))}
+            ${detailItem('สถานะ', d.status)}
+            ${detailItem('ยอดที่ชำระแล้ว', formatMoney(d.paidAmount))}
+            ${detailItem('ยอดคงเหลือ', formatMoney(d.remainingAmount))}
+          </div>
+
+          <div class="detail-section-title">งวดการชำระ (${c.installments} งวด)</div>
+          <div class="installment-detail-list">${installmentRows}</div>
+
+          <div class="detail-section-title">ข้อมูลอาชีพและที่ทำงาน</div>
+          <div class="detail-grid">
+            ${detailItem('อาชีพ', c.occupation)}
+            ${detailItem('เงินเดือน', c.salary === '' || c.salary === undefined || c.salary === null ? '-' : formatMoney(c.salary))}
+            ${detailItem('เบอร์นายจ้าง', c.employerPhone)}
+            ${detailItem('ที่ทำงาน', c.workplace)}
+            ${c.workplaceMapUrl
+              ? detailItem('ลิงก์แผนที่ที่ทำงาน', `<a href="${escapeHtml(c.workplaceMapUrl)}" target="_blank" rel="noopener">เปิดแผนที่</a>`, { raw: true })
+              : detailItem('ลิงก์แผนที่ที่ทำงาน', '-')}
+          </div>
+
+          <div class="detail-section-title">บุคคลอ้างอิง</div>
+          ${refItems || '<p class="modal-hint">ไม่มีข้อมูลผู้อ้างอิง</p>'}
+
+          <div class="detail-section-title">รูปบัตรประชาชนลูกค้า</div>
+          ${c.idCardPhotoUrl
+            ? `<div class="photo-preview"><img src="${escapeHtml(c.idCardPhotoUrl)}" alt="รูปบัตรประชาชน"><a href="${escapeHtml(c.idCardPhotoUrl)}" target="_blank" rel="noopener" class="photo-status">เปิดรูปเต็ม</a></div>`
+            : '<p class="modal-hint">ไม่มีรูปบัตรประชาชน</p>'}
+
+          <div class="detail-section-title">หมายเหตุติดตาม</div>
+          <p class="modal-hint">${c.trackingNote ? escapeHtml(c.trackingNote) : 'ไม่มีหมายเหตุ'}</p>
+
+        </div>
+        <div class="modal-footer">
+          <button class="btn btn-ghost" data-close-details>ปิด</button>
+          <button class="btn btn-primary" data-edit-from-details="${c.id}">แก้ไขสัญญา</button>
+        </div>
+      </div>
+    `;
+
+    document.body.appendChild(overlay);
+
+    const close = () => overlay.remove();
+    overlay.querySelectorAll('[data-close-details]').forEach((el) => el.addEventListener('click', close));
+    overlay.addEventListener('click', (e) => { if (e.target === overlay) close(); });
+    overlay.querySelector('[data-edit-from-details]').addEventListener('click', () => {
+      close();
+      App.navigate('form', { editId: c.id });
+    });
   }
 
   function escapeHtml(str) {

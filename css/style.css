@@ -626,6 +626,58 @@ tr.track-incomplete:hover td, tr.track-done:hover td { filter: brightness(0.97);
 .modal-hint { font-size: 12.5px; color: var(--text-mute); margin: 0; }
 .modal-footer { display: flex; justify-content: flex-end; gap: 10px; padding: 14px 18px; border-top: 1px solid var(--border); }
 
+/* ---------- Contract details modal ---------- */
+
+.modal-large { max-width: 720px; }
+.modal-body-scroll { max-height: 72vh; overflow-y: auto; }
+
+.contract-link { color: var(--primary); font-weight: 700; text-decoration: none; }
+.contract-link:hover { text-decoration: underline; }
+
+.detail-section-title {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--primary-dark);
+  text-transform: uppercase;
+  letter-spacing: 0.02em;
+  margin-top: 6px;
+  padding-top: 12px;
+  border-top: 1px dashed var(--border);
+}
+
+.detail-section-title:first-child { margin-top: 0; padding-top: 0; border-top: none; }
+
+.detail-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 10px 16px;
+}
+
+@media (max-width: 640px) {
+  .detail-grid { grid-template-columns: repeat(2, 1fr); }
+}
+
+.detail-item { display: flex; flex-direction: column; gap: 2px; }
+.detail-label { font-size: 11.5px; color: var(--text-mute); font-weight: 600; }
+.detail-value { font-size: 14px; color: var(--text); font-weight: 600; }
+.detail-value a { color: var(--primary); }
+
+.installment-detail-list { display: flex; flex-direction: column; gap: 6px; }
+
+.installment-detail-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1.4fr;
+  align-items: center;
+  gap: 10px;
+  font-size: 13.5px;
+}
+
+.installment-detail-row .slot-cell {
+  min-width: unset;
+  text-align: left;
+  padding: 6px 10px;
+}
+
 /* ---------- Toast ---------- */
 
 .toast {
