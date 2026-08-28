@@ -52,7 +52,7 @@ const FormView = (() => {
             </label>
             <label class="field" data-field="imei">
               <span>IMEI</span>
-              <input type="text" id="f_imei" value="${escapeAttr(existing?.imei)}">
+              <input type="text" id="f_imei" placeholder="ตัวเลข 15 หลัก" value="${escapeAttr(existing?.imei)}">
               <div class="error-msg"></div>
             </label>
 
@@ -190,6 +190,23 @@ const FormView = (() => {
     installmentsLabel.textContent = `จำนวนงวด (เดือน) * — ผ่อนได้สูงสุด ${maxInstallmentsForPrice(existing?.totalPrice || 0)} งวด`;
     recalc();
 
+    const imeiInput = $('#f_imei');
+    const imeiField = $('[data-field="imei"]');
+    imeiInput.addEventListener('blur', () => {
+      const val = imeiInput.value.trim();
+      if (val && !isValidImei(val)) {
+        imeiField.classList.add('has-error');
+        imeiField.querySelector('.error-msg').textContent = 'IMEI ไม่ถูกต้อง (ต้องเป็นตัวเลข 15 หลัก และผ่านการตรวจสอบ checksum)';
+      } else {
+        imeiField.classList.remove('has-error');
+        imeiField.querySelector('.error-msg').textContent = '';
+      }
+    });
+    imeiInput.addEventListener('input', () => {
+      imeiField.classList.remove('has-error');
+      imeiField.querySelector('.error-msg').textContent = '';
+    });
+
     $('#btnCancelForm').addEventListener('click', () => App.navigate('list'));
 
     $('#contractForm').addEventListener('submit', (e) => {
@@ -237,6 +254,12 @@ const FormView = (() => {
       }
 
       if (!startDate) { setError('startDate', 'กรุณาเลือกวันที่เริ่มชำระ'); hasError = true; }
+
+      const imei = $('#f_imei').value.trim();
+      if (imei && !isValidImei(imei)) {
+        setError('imei', 'IMEI ไม่ถูกต้อง (ต้องเป็นตัวเลข 15 หลัก และผ่านการตรวจสอบ checksum)');
+        hasError = true;
+      }
 
       if (hasError) {
         App.toast('กรุณาตรวจสอบข้อมูลในฟอร์มอีกครั้ง', true);

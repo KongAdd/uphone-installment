@@ -77,6 +77,25 @@ function formatNumber(n) {
 
 const AMOUNT_TOLERANCE = 0.01;
 
+/* ---------- ตรวจสอบ IMEI ---------- */
+
+// IMEI มาตรฐาน: ตัวเลข 15 หลัก และหลักสุดท้ายเป็น check digit ตามอัลกอริทึม Luhn
+function isValidImei(imei) {
+  const digits = String(imei || '').replace(/[\s-]/g, '');
+  if (!/^\d{15}$/.test(digits)) return false;
+
+  let sum = 0;
+  for (let i = 0; i < digits.length; i++) {
+    let d = parseInt(digits[digits.length - 1 - i], 10);
+    if (i % 2 === 1) {
+      d *= 2;
+      if (d > 9) d -= 9;
+    }
+    sum += d;
+  }
+  return sum % 10 === 0;
+}
+
 // จำนวนงวดสูงสุดที่อนุญาต ผูกกับราคาขาย: ต่ำกว่าเกณฑ์ผ่อนได้สูงสุด 3 งวด, ถึง/เกินเกณฑ์ผ่อนได้สูงสุด 6 งวด
 const INSTALLMENT_PRICE_THRESHOLD = 8400;
 
