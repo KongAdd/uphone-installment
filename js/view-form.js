@@ -83,6 +83,58 @@ const FormView = (() => {
             </label>
           </div>
 
+          <div class="form-section-title">ข้อมูลอาชีพและที่ทำงาน</div>
+          <div class="form-grid">
+            <label class="field">
+              <span>อาชีพ</span>
+              <input type="text" id="f_occupation" value="${escapeAttr(existing?.occupation)}">
+            </label>
+            <label class="field">
+              <span>เงินเดือน (บาท)</span>
+              <input type="number" id="f_salary" min="0" step="0.01" value="${existing?.salary ?? ''}">
+            </label>
+            <label class="field">
+              <span>เบอร์นายจ้าง</span>
+              <input type="text" id="f_employerPhone" value="${escapeAttr(existing?.employerPhone)}">
+            </label>
+            <label class="field span-2">
+              <span>ที่ทำงาน</span>
+              <input type="text" id="f_workplace" value="${escapeAttr(existing?.workplace)}">
+            </label>
+            <label class="field">
+              <span>ลิงก์ Google Map ที่ทำงาน</span>
+              <input type="url" id="f_workplaceMapUrl" placeholder="https://maps.google.com/..." value="${escapeAttr(existing?.workplaceMapUrl)}">
+            </label>
+          </div>
+
+          <div class="form-section-title">บุคคลอ้างอิง</div>
+          <div class="form-grid">
+            <label class="field">
+              <span>ชื่อผู้อ้างอิงคนที่ 1</span>
+              <input type="text" id="f_ref1Name" value="${escapeAttr(existing?.ref1Name)}">
+            </label>
+            <label class="field">
+              <span>เบอร์โทรผู้อ้างอิงคนที่ 1</span>
+              <input type="text" id="f_ref1Phone" value="${escapeAttr(existing?.ref1Phone)}">
+            </label>
+            <label class="field">
+              <span>ความสัมพันธ์ (คนที่ 1)</span>
+              <input type="text" id="f_ref1Relation" placeholder="เช่น พ่อ, แม่, เพื่อนร่วมงาน" value="${escapeAttr(existing?.ref1Relation)}">
+            </label>
+            <label class="field">
+              <span>ชื่อผู้อ้างอิงคนที่ 2</span>
+              <input type="text" id="f_ref2Name" value="${escapeAttr(existing?.ref2Name)}">
+            </label>
+            <label class="field">
+              <span>เบอร์โทรผู้อ้างอิงคนที่ 2</span>
+              <input type="text" id="f_ref2Phone" value="${escapeAttr(existing?.ref2Phone)}">
+            </label>
+            <label class="field">
+              <span>ความสัมพันธ์ (คนที่ 2)</span>
+              <input type="text" id="f_ref2Relation" placeholder="เช่น พ่อ, แม่, เพื่อนร่วมงาน" value="${escapeAttr(existing?.ref2Relation)}">
+            </label>
+          </div>
+
           <div class="calc-summary">
             <div class="calc-item">
               <div class="val" id="calcDownPayment">-</div>
@@ -279,6 +331,17 @@ const FormView = (() => {
         startDate,
         payments: payments.map((p, i) => (i < installments ? p : null)),
         trackingNote: $('#f_trackingNote').value,
+        occupation: $('#f_occupation').value.trim(),
+        salary: $('#f_salary').value,
+        workplace: $('#f_workplace').value.trim(),
+        workplaceMapUrl: $('#f_workplaceMapUrl').value.trim(),
+        employerPhone: $('#f_employerPhone').value.trim(),
+        ref1Name: $('#f_ref1Name').value.trim(),
+        ref1Phone: $('#f_ref1Phone').value.trim(),
+        ref1Relation: $('#f_ref1Relation').value.trim(),
+        ref2Name: $('#f_ref2Name').value.trim(),
+        ref2Phone: $('#f_ref2Phone').value.trim(),
+        ref2Relation: $('#f_ref2Relation').value.trim(),
       };
 
       if (isEdit) {

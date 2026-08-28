@@ -29,6 +29,17 @@ var HEADERS = [
   'งวดที่ 5',
   'งวดที่ 6',
   'หมายเหตุ', // หมายเหตุติดตาม (ฟิลด์ดิบที่พนักงานพิมพ์เอง ไม่ใช่ฟิลด์คำนวณ)
+  'อาชีพ',
+  'เงินเดือน',
+  'ที่ทำงาน',
+  'ลิงก์แผนที่ที่ทำงาน',
+  'เบอร์นายจ้าง',
+  'ชื่อผู้อ้างอิง 1',
+  'เบอร์โทรผู้อ้างอิง 1',
+  'ความสัมพันธ์ผู้อ้างอิง 1',
+  'ชื่อผู้อ้างอิง 2',
+  'เบอร์โทรผู้อ้างอิง 2',
+  'ความสัมพันธ์ผู้อ้างอิง 2',
 ];
 
 /**
@@ -48,6 +59,8 @@ function resetSheet() {
 
 /**
  * คืนชีตเป้าหมาย สร้างใหม่พร้อมหัวตารางถ้ายังไม่มี
+ * ถ้าชีตมีอยู่แล้วแต่ขาดคอลัมน์ใหม่ (เช่นเพิ่มฟิลด์ทีหลัง) จะเติมหัวคอลัมน์ที่ขาดต่อท้ายให้อัตโนมัติ
+ * โดยไม่แตะแถวข้อมูลเดิมเลย (ดู migrateHeaders_)
  */
 function getSheet_() {
   var ss = SpreadsheetApp.getActiveSpreadsheet();
@@ -58,8 +71,20 @@ function getSheet_() {
   if (sheet.getLastRow() === 0) {
     sheet.appendRow(HEADERS);
     sheet.setFrozenRows(1);
+  } else {
+    migrateHeaders_(sheet);
   }
   return sheet;
+}
+
+/** เติมหัวคอลัมน์ที่ยังไม่มีในชีต (เทียบกับ HEADERS) ต่อท้ายคอลัมน์สุดท้าย ไม่ลบ/ไม่ย้ายอะไรที่มีอยู่ */
+function migrateHeaders_(sheet) {
+  var lastCol = sheet.getLastColumn();
+  var currentHeaders = lastCol > 0 ? sheet.getRange(1, 1, 1, lastCol).getValues()[0] : [];
+  var missing = HEADERS.filter(function (h) { return currentHeaders.indexOf(h) === -1; });
+  if (missing.length > 0) {
+    sheet.getRange(1, lastCol + 1, 1, missing.length).setValues([missing]);
+  }
 }
 
 /**
